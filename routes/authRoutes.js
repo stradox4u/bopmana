@@ -6,7 +6,7 @@ const User = require('../models/user')
 
 const router = express.Router()
 
-router.get('/signup', [
+router.post('/signup', [
   body('name').trim().isString().isLength({ min: 2 }).withMessage('Name must be min. 2 characters'),
   body('email').isEmail().withMessage('Please enter a valid email address')
     .custom((value, { req }) => {
@@ -30,5 +30,7 @@ router.get('/signup', [
 ],
   authController.signup
 )
+
+router.post('/login', authController.login)
 
 module.exports = router

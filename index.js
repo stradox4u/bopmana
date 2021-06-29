@@ -1,26 +1,58 @@
+const path = require('path')
+require('dotenv').config()
+
 const express = require('express')
 const mongoose = require('mongoose')
+const multer = require('multer')
 
 const authRoutes = require('./routes/authRoutes')
 
 const app = express()
 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'public/images')
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + '-' + file.originalname)
+  }
+})
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'image/png' || file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg') {
+    cb(null, true)
+  } else {
+    cb(null, false)
+  }
+}
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+app.use(multer({
+  storage: fileStorage,
+  fileFilter: fileFilter
+}).single('image'))
+app.use('/public/images', express.static(path.join(__dirname, 'public', 'images')))
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  next()
 })
 
 app.use('/auth', authRoutes)
 
-app.use('/', () => {
-  console.log('Working')
+app.use((error, req, res, next) => {
+  const status = error.statusCode || 500
+  const message = error.message
+  const data = error.data
+  res.status(status).json({ message: message, data: data })
 })
 
-mongoose.connect('mongodb+srv://stradox:lV7herVan0r0ss@cluster0.tilxb.mongodb.net/bopmana?retryWrites=true&w=majority', {
+const dbUrl = process.env.DATABASE_URL
+
+mongoose.connect(dbUrl, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
