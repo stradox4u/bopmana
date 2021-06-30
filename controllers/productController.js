@@ -7,7 +7,7 @@ exports.postCreateProduct = async (req, res, next) => {
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed')
     error.statusCode = 422
-    res.status(422).json({ errors: error })
+    res.status(422).json({ valError: error, detailedError: errors })
     throw error
   }
   const title = req.body.title
@@ -26,13 +26,17 @@ exports.postCreateProduct = async (req, res, next) => {
   try {
     const product = new Product({
       title: title,
-      unitPrice: unitPrice,
-      cartonPrice: cartonPrice,
-      halfCartonPrice: halfCartonPrice,
+      prices: [
+        { unitPrice: unitPrice },
+        { cartonPrice: cartonPrice },
+        { halfCartonPrice: halfCartonPrice },
+      ],
       cartonQuantity: cartonQuantity,
       imageUrl: imageUrl,
-      stockUnits: stockUnits,
-      stockCartons: stockCartons
+      stockQuantity: [
+        { stockUnits: stockUnits },
+        { stockCartons: stockCartons }
+      ]
     })
     const result = await product.save()
     res.status(201).json({

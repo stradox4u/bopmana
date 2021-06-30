@@ -11,7 +11,7 @@ exports.signup = async (req, res, next) => {
     const error = new Error('Validation failed')
     error.statusCode = 422
     error.data = errors.array()
-    res.status(422).json({ errors: error })
+    res.status(422).json({ valError: error, detailedError: errors })
     throw error
   }
   let imageUrl
