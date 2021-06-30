@@ -23,6 +23,6 @@ const productSchema = new Schema({
     stockUnits: Number,
     stockCartons: Number
   }],
-})
+}, { timestamps: true })
 
 module.exports = mongoose.model('Product', productSchema)
