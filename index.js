@@ -33,7 +33,7 @@ app.use(multer({
   storage: fileStorage,
   fileFilter: fileFilter
 }).single('image'))
-app.use('/public/images', express.static(path.join(__dirname, 'public', 'images')))
+app.use('/public', express.static(path.join(__dirname, 'public')))
 
 const corsAllow = process.env.CORS_ALLOW
 app.use((req, res, next) => {

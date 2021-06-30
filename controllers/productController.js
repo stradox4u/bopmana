@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator')
 
 const Product = require('../models/product')
 const helpers = require('../helpers/helpers')
+const { post } = require('../routes/authRoutes')
 
 exports.postCreateProduct = async (req, res, next) => {
   const errors = validationResult(req)
@@ -137,6 +138,34 @@ exports.editProduct = async (req, res, next) => {
     res.status(200).json({
       message: 'Product updated',
       product: updatedProduct
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
+}
+
+exports.deleteProduct = async (req, res, next) => {
+  const prodId = req.params.productId
+  try {
+    const product = await Product.findById(prodId)
+    if (!product) {
+      const error = new Error('Product not found')
+      error.statusCode = 404
+      throw error
+    }
+    if (req.userRole !== 'admin') {
+      const error = new Error('Not authorized')
+      error.statusCode = 403
+      throw error
+    }
+    helpers.clearImage(product.imageUrl)
+    await Product.findByIdAndRemove(prodId)
+
+    res.status(200).json({
+      message: 'Success'
     })
   } catch (err) {
     if (!err.statusCode) {

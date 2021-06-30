@@ -2,7 +2,6 @@ const fs = require('fs')
 const path = require('path')
 
 exports.clearImage = (filepath) => {
-  filePath = path.join(__dirname, '../', filepath)
-  console.log(filePath)
+  const filePath = path.join(__dirname, '../', filepath)
   fs.unlink(filePath, err => console.log(err))
 }
