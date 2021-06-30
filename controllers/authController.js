@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/user')
 const helpers = require('../helpers/helpers')
 
+const defaultImage = 'public/default_user.png'
+
 exports.signup = async (req, res, next) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
@@ -23,7 +25,7 @@ exports.signup = async (req, res, next) => {
   if (req.file) {
     imageUrl = req.file.path
   } else {
-    imageUrl = null
+    imageUrl = defaultImage
   }
   const name = req.body.name
   const email = req.body.email

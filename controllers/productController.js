@@ -2,7 +2,8 @@ const { validationResult } = require('express-validator')
 
 const Product = require('../models/product')
 const helpers = require('../helpers/helpers')
-const { post } = require('../routes/authRoutes')
+
+const defaultImage = 'public/default_product.png'
 
 exports.postCreateProduct = async (req, res, next) => {
   const errors = validationResult(req)
@@ -28,7 +29,7 @@ exports.postCreateProduct = async (req, res, next) => {
   if (req.file) {
     imageUrl = req.file.path
   } else {
-    imageUrl = null
+    imageUrl = defaultImage
   }
   try {
     const product = new Product({
@@ -98,7 +99,7 @@ exports.editProduct = async (req, res, next) => {
   if (req.file) {
     imageUrl = req.file.path
   } else {
-    imageUrl = null
+    imageUrl = defaultImage
   }
   try {
     const product = await Product.findById(prodId)
@@ -120,7 +121,7 @@ exports.editProduct = async (req, res, next) => {
       error.statusCode = 403
       throw error
     }
-    if (product.imageUrl !== imageUrl) {
+    if (product.imageUrl !== imageUrl && product.imageUrl !== defaultImage) {
       helpers.clearImage(product.imageUrl)
     }
     product.title = updatedTitle
