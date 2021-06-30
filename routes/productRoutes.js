@@ -28,4 +28,27 @@ router.post('/create', isAuth, [
   productController.postCreateProduct
 )
 
+router.get('/products', isAuth, productController.getProductsIndex)
+
+router.patch('/product/:productId', isAuth, [
+  body('title').trim().isString().isLength({ min: 3 }).custom((value, { req }) => {
+    return Product.find({ title: value })
+      .then(foundProducts => {
+        if (foundProducts.find(e => e._id.toString() !== req.body.productId)) {
+          throw new Error('Product title is already taken')
+        } else {
+          return true
+        }
+      })
+  }),
+  body('unitPrice').isNumeric(),
+  body('cartonPrice').isNumeric(),
+  body('halfCartonPrice').isNumeric(),
+  body('cartonQuantity').isNumeric(),
+  body('stockUnits').isNumeric(),
+  body('stockCartons').isNumeric()
+],
+  productController.editProduct
+)
+
 module.exports = router
