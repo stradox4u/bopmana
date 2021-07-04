@@ -9,7 +9,6 @@ const productSchema = new Schema({
   prices: [{
     unitPrice: Number,
     cartonPrice: Number,
-    halfCartonPrice: Number
   }],
   cartonQuantity: {
     type: Number,

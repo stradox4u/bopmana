@@ -12,7 +12,7 @@ router.post('/create', isAuth, [
     return Product.findOne({ title: value })
       .then(foundProduct => {
         if (foundProduct) {
-          throw new Error('Product title is already taken')
+          return Promise.reject('Product title is already taken')
         } else {
           return true
         }
@@ -35,9 +35,7 @@ router.patch('/product/:productId', isAuth, [
     return Product.find({ title: value })
       .then(foundProducts => {
         if (foundProducts.find(e => e._id.toString() !== req.body.productId)) {
-          throw new Error('Product title is already taken')
-        } else {
-          return true
+          return Promise.reject('Product title is already taken')
         }
       })
   }),

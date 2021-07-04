@@ -20,7 +20,6 @@ const orderSchema = new Schema({
     quantity: [{
       unitQuantity: Number,
       cartonQuantity: Number,
-      halfCartonQuantity: Number,
     }]
   }],
   totalPrice: {
