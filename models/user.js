@@ -20,7 +20,12 @@ const userSchema = new Schema({
   },
   role: {
     type: String,
-    required: true,
+    default: 'user',
+  },
+  businessId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Business',
+    required: true
   },
   imageUrl: {
     type: String,

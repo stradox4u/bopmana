@@ -14,6 +14,11 @@ const productSchema = new Schema({
     type: Number,
     required: true,
   },
+  businessId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Business',
+    required: true
+  },
   imageUrl: {
     type: String,
     required: false

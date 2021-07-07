@@ -1,10 +1,15 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const orderSchema = new Schema({
+const saleSchema = new Schema({
   creator: {
     type: Schema.Types.ObjectId,
     ref: 'User',
+    required: true
+  },
+  businessId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Business',
     required: true
   },
   products: [{
@@ -22,10 +27,27 @@ const orderSchema = new Schema({
       cartonQuantity: Number,
     }]
   }],
+  faulty: {
+    type: Boolean,
+    default: false,
+    auditedBy: {
+      userId: Schema.Types.ObjectId,
+      ref: 'User',
+      required: false
+    }
+  },
+  paid: {
+    type: String,
+    default: 'full'
+  },
+  amountPaid: {
+    type: Number,
+    required: true
+  },
   totalPrice: {
     type: Number,
     required: true,
   }
 }, { timestamps: true })
 
-module.exports = mongoose.model('Order', orderSchema)
+module.exports = mongoose.model('Sale', saleSchema)

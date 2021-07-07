@@ -1,9 +1,9 @@
 const { validationResult } = require('express-validator')
 
 const helpers = require('../helpers/helpers')
-const Order = require('../models/order')
+const Sale = require('../models/sale')
 
-exports.createOrder = async (req, res, next) => {
+exports.createSale = async (req, res, next) => {
   const errors = validationResult(req)
 
   if (!errors.isEmpty()) {
@@ -21,17 +21,17 @@ exports.createOrder = async (req, res, next) => {
     // Decrement stock of each product
     helpers.decreaseStock(products)
 
-    // Create and store the order
-    const order = new Order({
+    // Create and store the sale
+    const sale = new Sale({
       creator: creator,
       products: products,
       totalPrice: totalPrice,
     })
-    const savedOrder = await order.save()
+    const savedSale = await sale.save()
 
     return res.status(201).json({
-      message: 'Order saved successfully',
-      orderId: savedOrder._id
+      message: 'Sale saved successfully',
+      saleId: savedSale._id
     })
   } catch (err) {
     if (!err.statusCode) {
@@ -41,17 +41,17 @@ exports.createOrder = async (req, res, next) => {
   }
 }
 
-exports.getOrdersIndex = async (req, res, next) => {
+exports.getSalesIndex = async (req, res, next) => {
   try {
-    const orders = await Order.find()
-    if (!orders) {
-      const error = new Error('Could not fetch orders')
+    const sales = await Sale.find()
+    if (!sales) {
+      const error = new Error('Could not fetch sales')
       error.statusCode = 404
       throw error
     }
     res.status(200).json({
       message: 'Success',
-      orders: orders
+      sales: sales
     })
   } catch (err) {
     if (!err.statusCode) {
@@ -61,19 +61,19 @@ exports.getOrdersIndex = async (req, res, next) => {
   }
 }
 
-exports.getOrder = async (req, res, next) => {
-  const orderId = req.params.orderId
+exports.getSale = async (req, res, next) => {
+  const saleId = req.params.saleId
 
   try {
-    const order = await Order.findById(orderId)
-    if (!order) {
-      const error = new Error('Order not found')
+    const sale = await Sale.findById(saleId)
+    if (!sale) {
+      const error = new Error('Sale not found')
       error.statusCode = 404
       throw error
     }
     res.status(200).json({
       message: 'Success',
-      order: order
+      sale: sale
     })
   } catch (err) {
     if (!err.statusCode) {
