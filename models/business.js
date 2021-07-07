@@ -9,15 +9,17 @@ const businessSchema = new Schema({
   },
   businessLogoUrl: {
     type: String,
-    required: true
+    required: false
   },
   staff: [{
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    required: false,
   }],
   administrators: [{
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    required: false
   }],
   subscriptionPlan: {
     type: String,

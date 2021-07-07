@@ -8,6 +8,7 @@ const multer = require('multer')
 const authRoutes = require('./routes/authRoutes')
 const productRoutes = require('./routes/productRoutes')
 const saleRoutes = require('./routes/saleRoutes')
+const businessRoutes = require('./routes/businessRoutes')
 
 const app = express()
 
@@ -47,6 +48,7 @@ app.use((req, res, next) => {
 app.use('/auth', authRoutes)
 app.use('/product', productRoutes)
 app.use('/sale', saleRoutes)
+app.use('/business', businessRoutes)
 
 app.use((error, req, res, next) => {
   const status = error.statusCode || 500
