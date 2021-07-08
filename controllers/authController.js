@@ -1,11 +1,15 @@
+const url = require('url')
+
 const { validationResult } = require("express-validator")
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
 const User = require('../models/user')
 const helpers = require('../helpers/helpers')
+const eventEmitter = require('../listeners/listeners')
 
 const defaultImage = 'public/default_user.png'
+const baseUrl = process.env.APP_BASE_URL
 
 exports.signup = async (req, res, next) => {
   const errors = validationResult(req)
@@ -29,7 +33,6 @@ exports.signup = async (req, res, next) => {
   }
   const name = req.body.name
   const email = req.body.email
-  const username = req.body.username
   const password = req.body.password
   const role = req.body.role
   try {
@@ -43,7 +46,6 @@ exports.signup = async (req, res, next) => {
     const user = new User({
       name: name,
       email: email,
-      username: username,
       password: hashedPassword,
       role: role,
       imageUrl: imageUrl
@@ -84,12 +86,140 @@ exports.login = async (req, res, next) => {
     const token = jwt.sign({
       email: user.email,
       userId: user._id.toString(),
-      userRole: user.role
+      userRole: user.role,
+      businessId: user.businessId.toString()
     }, jwtSecret, { expiresIn: '1h' })
     res.status(200).json({
       token: token,
       userId: user._id.toString(),
-      userRole: user.role
+      userRole: user.role,
+      businessId: user.businessId.toString()
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
+}
+
+exports.putVerifyEmail = async (req, res, next) => {
+  const token = url.parse(req.url, true).query.token
+
+  const decodedToken = jwt.verify(token, process.env.JWT_SECRET)
+
+  if (!decodedToken) {
+    const error = new Error('Token verification failed')
+    error.statusCode = 401
+    throw error
+  }
+  const userId = decodedToken.userId
+
+  try {
+    await User.findByIdAndUpdate(userId, { emailVerifiedAt: new Date() })
+
+    res.status(200).json({
+      message: 'Success'
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
+}
+
+exports.resendVerificationMail = async (req, res, next) => {
+  const userId = req.params.userId
+  try {
+    const user = await User.findById(userId)
+
+    if (!user) {
+      const error = new Error('User not found')
+      error.statusCode = 404
+      throw error
+    }
+
+    const token = jwt.sign({
+      userId: user._id.toString(),
+    }, process.env.JWT_SECRET, { expiresIn: '10m' })
+    const verifyUrl = `${baseUrl}/auth/verify/email?token=${token}`
+
+    eventEmitter.emit('sendVerificationEmail', {
+      username: user.name,
+      verifyUrl: verifyUrl,
+      recipient: user.email
+    })
+
+    res.status(200).json({
+      message: 'Verification email sent successfully'
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
+}
+
+exports.postPasswordReset = async (req, res, next) => {
+  const email = req.body.email
+
+  try {
+    const user = await User.findOne({ email })
+    if (!user) {
+      const error = new Error('Email not linked to any account')
+      error.statusCode = 404
+      throw error
+    }
+    const token = jwt.sign({
+      userId: user._id.toString(),
+    }, process.env.JWT_SECRET, { expiresIn: '1h' })
+    const resetUrl = `${baseUrl}/auth/password/update?token=${token}`
+
+    eventEmitter.emit('resetPassword', {
+      username: user.name,
+      resetUrl: resetUrl,
+      recipient: user.email
+    })
+    res.status(200).json({
+      message: 'Password reset email sent'
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
+}
+
+exports.patchUpdatePassword = async (req, res, next) => {
+  const token = url.parse(req.url, true).query.token
+
+  const decodedToken = jwt.verify(token, process.env.JWT_SECRET)
+
+  if (!decodedToken) {
+    const error = new Error('Token verification failed')
+    error.statusCode = 401
+    throw error
+  }
+  const userId = decodedToken.userId
+  const password = req.body.password
+  const hashedPw = await bcrypt.hash(password, 12)
+  if (!hashedPw) {
+    const error = new Error('Password hashing failed')
+    throw error
+  }
+  try {
+    const user = await User.findByIdAndUpdate(userId, { password: hashedPw })
+
+    eventEmitter.emit('passwordUpdated', {
+      username: user.name,
+      recipient: user.email
+    })
+
+    res.status(200).json({
+      message: 'Password updated successfully'
     })
   } catch (err) {
     if (!err.statusCode) {

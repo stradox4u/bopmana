@@ -1,5 +1,8 @@
 const { validationResult } = require('express-validator')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+
+const eventEmitter = require('../listeners/listeners')
 
 const Business = require('../models/business')
 const User = require('../models/user')
@@ -22,7 +25,6 @@ exports.postCreateBusiness = async (req, res, next) => {
 
   const userName = req.body.userName
   const email = req.body.userEmail
-  const userAlias = req.body.userAlias
   const phoneNumber = req.body.userPhoneNumber
   const password = req.body.password
   const role = 'admin'
@@ -46,7 +48,6 @@ exports.postCreateBusiness = async (req, res, next) => {
     const administrator = new User({
       name: userName,
       email: email,
-      username: userAlias,
       phoneNumber: phoneNumber,
       role: role,
       imageUrl: userImageUrl,
@@ -57,6 +58,21 @@ exports.postCreateBusiness = async (req, res, next) => {
 
     savedBusiness.administrators.push(savedAdmin._id)
     await savedBusiness.save()
+
+    // Create URL to verify email
+    const baseUrl = process.env.APP_BASE_URL
+    const token = jwt.sign({
+      userId: savedAdmin._id.toString(),
+      businessId: savedBusiness._id.toString(),
+    }, process.env.JWT_SECRET, { expiresIn: '10m' })
+    const verifyUrl = `${baseUrl}/auth/verify/email?token=${token}`
+
+    eventEmitter.emit('sendVerificationEmail', {
+      username: savedAdmin.name,
+      verifyUrl: verifyUrl,
+      recipient: savedAdmin.email
+    })
+
     res.status(201).json({
       message: 'Business created successfully',
       businessId: savedBusiness._id,

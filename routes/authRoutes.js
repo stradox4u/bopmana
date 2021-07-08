@@ -33,4 +33,12 @@ router.post('/signup', [
 
 router.post('/login', authController.login)
 
+router.put('/verify/email', authController.putVerifyEmail)
+
+router.post('/verify/email/:userId', authController.resendVerificationMail)
+
+router.post('/password/reset', authController.postPasswordReset)
+
+router.patch('/password/update', authController.patchUpdatePassword)
+
 module.exports = router
