@@ -65,6 +65,6 @@ mongoose.connect(dbUrl, {
 })
   .then(result => {
     // console.log(result)
-    app.listen(8080)
+    app.listen(process.env.PORT)
   })
   .catch(err => console.log(err))
