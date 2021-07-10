@@ -17,8 +17,8 @@ router.post('/signup', [
           }
         })
     }).normalizeEmail(),
-  body('phoneNumber').trim().isString().isLength({ min: 11, max: 13 }),
-  body('password').trim().isLength({ min: 6 }),
+  body('phoneNumber').trim().isString().isLength({ min: 11, max: 13 }).withMessage('Phone number is not valid'),
+  body('password').trim().isLength({ min: 6 }).withMessage('Password must be min. 6 characters'),
   body('confirmPassword').custom((value, { req }) => {
     if (value !== req.body.password) {
       throw new Error('Passwords do not match')

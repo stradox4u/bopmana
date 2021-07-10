@@ -16,6 +16,8 @@ exports.createSale = async (req, res, next) => {
   const creator = req.body.creator
   const products = req.body.products
   const totalPrice = req.body.totalPrice * 100
+  const amountPaid = req.body.amountPaid * 100
+  const businessId = req.businessId
 
   try {
     // Decrement stock of each product
@@ -26,6 +28,8 @@ exports.createSale = async (req, res, next) => {
       creator: creator,
       products: products,
       totalPrice: totalPrice,
+      businessId: businessId,
+      amountPaid: amountPaid
     })
     const savedSale = await sale.save()
 

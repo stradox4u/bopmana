@@ -3,11 +3,12 @@ const { body } = require('express-validator')
 
 const productController = require('../controllers/productController')
 const isAuth = require('../middleware/isAuthenticated')
+const isAdmin = require('../middleware/isAdmin')
 const Product = require('../models/product')
 
 const router = express.Router()
 
-router.post('/create', isAuth, [
+router.post('/create', isAuth, isAdmin, [
   body('title').trim().isString().isLength({ min: 3 }).custom((value, { req }) => {
     return Product.findOne({ title: value })
       .then(foundProduct => {
@@ -30,7 +31,7 @@ router.post('/create', isAuth, [
 
 router.get('/products', isAuth, productController.getProductsIndex)
 
-router.patch('/product/:productId', isAuth, [
+router.patch('/product/:productId', isAuth, isAdmin, [
   body('title').trim().isString().isLength({ min: 3 }).custom((value, { req }) => {
     return Product.find({ title: value })
       .then(foundProducts => {
@@ -49,6 +50,6 @@ router.patch('/product/:productId', isAuth, [
   productController.editProduct
 )
 
-router.delete('/product/:productId', isAuth, productController.deleteProduct)
+router.delete('/product/:productId', isAuth, isAdmin, productController.deleteProduct)
 
 module.exports = router

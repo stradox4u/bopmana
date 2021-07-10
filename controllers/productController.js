@@ -21,7 +21,6 @@ exports.postCreateProduct = async (req, res, next) => {
   const title = req.body.title
   const unitPrice = req.body.unitPrice * 100
   const cartonPrice = req.body.cartonPrice * 100
-  const halfCartonPrice = req.body.halfCartonPrice * 100
   const cartonQuantity = req.body.cartonQuantity
   const stockUnits = req.body.stockUnits
   const stockCartons = req.body.stockCartons
@@ -37,14 +36,14 @@ exports.postCreateProduct = async (req, res, next) => {
       prices: [
         { unitPrice: unitPrice },
         { cartonPrice: cartonPrice },
-        { halfCartonPrice: halfCartonPrice },
       ],
       cartonQuantity: cartonQuantity,
       imageUrl: imageUrl,
       stockQuantity: [
         { stockUnits: stockUnits },
         { stockCartons: stockCartons }
-      ]
+      ],
+      businessId: req.businessId
     })
     const result = await product.save()
     res.status(201).json({
@@ -91,7 +90,6 @@ exports.editProduct = async (req, res, next) => {
   const updatedTitle = req.body.title
   const updatedUnitPrice = req.body.unitPrice * 100
   const updatedCartonPrice = req.body.cartonPrice * 100
-  const updatedHalfCartonPrice = req.body.halfCartonPrice * 100
   const updatedCartonQuantity = req.body.cartonQuantity
   const updatedStockUnits = req.body.stockUnits
   const updatedStockCartons = req.body.stockCartons
@@ -128,7 +126,6 @@ exports.editProduct = async (req, res, next) => {
     product.prices = [
       { unitPrice: updatedUnitPrice },
       { cartonPrice: updatedCartonPrice },
-      { halfCartonPrice: updatedHalfCartonPrice }
     ]
     product.cartonQuantity = updatedCartonQuantity
     product.stockQuantity = [
