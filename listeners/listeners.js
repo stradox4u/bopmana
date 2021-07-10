@@ -67,4 +67,26 @@ eventEmitter.on('passwordUpdated', async ({ username, recipient }) => {
   }
 })
 
+eventEmitter.on('inviteCreated', async ({ username, businessname, recipient, inviteUrl }) => {
+  const msg = {
+    to: recipient,
+    from: 'umar@arcodeh.pro',
+    templateId: 'd-8186f30811b4430490021547697802d2',
+    dynamicTemplateData: {
+      subject: `Invitation from ${businessname}`,
+      username: username,
+      businessname: businessname,
+      inviteLink: inviteUrl
+    }
+  }
+  try {
+    const sentMail = await sgMail.send(msg)
+    if (sentMail) {
+      console.log('Invitation Email Sent')
+    }
+  } catch (err) {
+    console.log(err)
+  }
+})
+
 module.exports = eventEmitter

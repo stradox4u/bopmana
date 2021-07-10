@@ -6,6 +6,7 @@ const eventEmitter = require('../listeners/listeners')
 
 const Business = require('../models/business')
 const User = require('../models/user')
+const business = require('../models/business')
 
 const defaultBusinessLogo = 'public/default_business.png'
 const defaultUserImage = 'public/default_user.png'
@@ -65,8 +66,9 @@ exports.postCreateBusiness = async (req, res, next) => {
       userId: savedAdmin._id.toString(),
       businessId: savedBusiness._id.toString(),
     }, process.env.JWT_SECRET, { expiresIn: '10m' })
-    const verifyUrl = `${baseUrl}/auth/verify/email?token=${token}`
+    const verifyUrl = `${baseUrl}/auth/verify/email/${token}`
 
+    // Fire event to send verification email
     eventEmitter.emit('sendVerificationEmail', {
       username: savedAdmin.name,
       verifyUrl: verifyUrl,
@@ -86,6 +88,50 @@ exports.postCreateBusiness = async (req, res, next) => {
   }
 }
 
-exports.getBusiness = (req, res, next) => {
+exports.postCreateInvite = async (req, res, next) => {
+  const errors = validationResult(req)
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed')
+    error.statusCode = 422
+    error.data = errors.array()
+    res.status(422).json({ error: error })
+    throw error
+  }
+  try {
+    const user = await User.findById(req.userId)
+    if (!user) {
+      const error = new Error('User not found')
+      error.statusCode = 404
+      throw error
+    }
 
+    const business = await Business.findById(req.businessId)
+    if (!business) {
+      const error = new Error('Business not found')
+      error.statusCode = 404
+      throw error
+    }
+    const baseUrl = process.env.APP_BASE_URL
+    const token = jwt.sign({
+      invitee: req.body.email,
+      businessId: business._id.toString()
+    }, process.env.JWT_SECRET, { expiresIn: '1h' })
+    const inviteUrl = `${baseUrl}/auth/signup/${token}`
+
+    eventEmitter.emit('inviteCreated', {
+      username: user.name,
+      businessname: business.name,
+      recipient: req.body.email,
+      inviteUrl: inviteUrl
+    })
+
+    res.status(200).json({
+      message: 'Invitation email sent'
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
 }

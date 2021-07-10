@@ -17,7 +17,7 @@ router.post('/signup', [
           }
         })
     }).normalizeEmail(),
-  body('username').trim().isString().isLength({ min: 5 }),
+  body('phoneNumber').trim().isString().isLength({ min: 11, max: 13 }),
   body('password').trim().isLength({ min: 6 }),
   body('confirmPassword').custom((value, { req }) => {
     if (value !== req.body.password) {
@@ -26,7 +26,6 @@ router.post('/signup', [
       return true
     }
   }),
-  body('role').trim().isString().not().isEmpty(),
 ],
   authController.signup
 )
@@ -39,6 +38,17 @@ router.post('/verify/email/:userId', authController.resendVerificationMail)
 
 router.post('/password/reset', authController.postPasswordReset)
 
-router.patch('/password/update', authController.patchUpdatePassword)
+router.patch('/password/update', [
+  body('password').trim().isLength({ min: 6 }),
+  body('confirmPassword').custom((val, { req }) => {
+    if (val !== req.body.password) {
+      throw new Error('Passwords do not match')
+    } else {
+      return true
+    }
+  })
+],
+  authController.patchUpdatePassword
+)
 
 module.exports = router
