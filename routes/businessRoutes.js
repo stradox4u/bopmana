@@ -6,6 +6,7 @@ const businessController = require('../controllers/businessController')
 const User = require('../models/user')
 const isAuth = require('../middleware/isAuthenticated')
 const isAdmin = require('../middleware/isAdmin')
+const isVerified = require('../middleware/userIsVerified')
 
 const router = express.Router()
 
@@ -53,7 +54,7 @@ router.post('/create', [
   businessController.postCreateBusiness
 )
 
-router.post('/invite/create', isAuth, isAdmin, [
+router.post('/invite/create', isAuth, isAdmin, isVerified, [
   body('email').trim().isEmail().withMessage('Please enter a valid email')
     .custom((val, { req }) => {
       return User.findOne({ email: val })
