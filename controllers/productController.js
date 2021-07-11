@@ -60,7 +60,7 @@ exports.postCreateProduct = async (req, res, next) => {
 
 exports.getProductsIndex = async (req, res, next) => {
   try {
-    const products = await Product.find()
+    const products = await Product.find({ businessId: req.businessId })
     res.status(200).json({
       message: 'Success',
       products: products
@@ -100,7 +100,7 @@ exports.editProduct = async (req, res, next) => {
     imageUrl = defaultImage
   }
   try {
-    const product = await Product.findById(prodId)
+    const product = await Product.findOne({ _id: prodId, businessId: req.businessId })
     if (!product) {
       // Delete uploaded image
       if (req.file) {
@@ -148,7 +148,7 @@ exports.editProduct = async (req, res, next) => {
 exports.deleteProduct = async (req, res, next) => {
   const prodId = req.params.productId
   try {
-    const product = await Product.findById(prodId)
+    const product = await Product.findOne({ _id: prodId, businessId: req.businessId })
     if (!product) {
       const error = new Error('Product not found')
       error.statusCode = 404
