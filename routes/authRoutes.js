@@ -17,6 +17,7 @@ router.post('/signup', [
           }
         })
     }).normalizeEmail(),
+  body('token').trim().isString().not().isEmpty().withMessage('Token not supplied'),
   body('phoneNumber').trim().isString().isLength({ min: 11, max: 13 }).withMessage('Phone number is not valid'),
   body('password').trim().isLength({ min: 6 }).withMessage('Password must be min. 6 characters'),
   body('confirmPassword').custom((value, { req }) => {

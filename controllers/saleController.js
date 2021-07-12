@@ -13,7 +13,7 @@ exports.createSale = async (req, res, next) => {
     throw error
   }
 
-  const creator = req.body.creator
+  const creator = req.userId
   const products = req.body.products
   const totalPrice = req.body.totalPrice * 100
   const amountPaid = req.body.amountPaid * 100
@@ -47,7 +47,12 @@ exports.createSale = async (req, res, next) => {
 
 exports.getSalesIndex = async (req, res, next) => {
   try {
-    const sales = await Sale.find()
+    let sales
+    if (req.userRole === 'admin') {
+      sales = await Sale.find({ businessId: req.businessId })
+    } else {
+      sales = await Sale.find({ businessId: req.businessId, creator: req.userId })
+    }
     if (!sales) {
       const error = new Error('Could not fetch sales')
       error.statusCode = 404
@@ -73,6 +78,16 @@ exports.getSale = async (req, res, next) => {
     if (!sale) {
       const error = new Error('Sale not found')
       error.statusCode = 404
+      throw error
+    }
+    if (sale.businessId.toString() !== req.businessId.toString()) {
+      const error = new Error('You cannot access this resource')
+      error.statusCode = 403
+      throw error
+    }
+    if (sale.creator.toString() !== req.userId.toString() && req.userRole !== 'admin') {
+      const error = new Error('You cannot access this resource')
+      error.statusCode = 403
       throw error
     }
     res.status(200).json({

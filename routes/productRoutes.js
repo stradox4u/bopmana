@@ -51,6 +51,11 @@ router.patch('/product/:productId', isAuth, isAdmin, isVerified, [
   productController.editProduct
 )
 
-router.delete('/product/:productId', isAuth, isAdmin, isVerified, productController.deleteProduct)
+router.delete('/product/:productId',
+  isAuth,
+  isAdmin,
+  isVerified,
+  productController.deleteProduct
+)
 
 module.exports = router

@@ -133,7 +133,7 @@ exports.putVerifyEmail = async (req, res, next) => {
   try {
     await User.findByIdAndUpdate(userId, { emailVerifiedAt: new Date() })
 
-    res.status(204).json({
+    res.status(200).json({
       message: 'Email verified successfully'
     })
   } catch (err) {
