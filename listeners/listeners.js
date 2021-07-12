@@ -67,7 +67,12 @@ eventEmitter.on('passwordUpdated', async ({ username, recipient }) => {
   }
 })
 
-eventEmitter.on('inviteCreated', async ({ username, businessname, recipient, inviteUrl }) => {
+eventEmitter.on('inviteCreated', async ({
+  username,
+  businessname,
+  recipient,
+  inviteUrl
+}) => {
   const msg = {
     to: recipient,
     from: 'umar@arcodeh.pro',
@@ -83,6 +88,33 @@ eventEmitter.on('inviteCreated', async ({ username, businessname, recipient, inv
     const sentMail = await sgMail.send(msg)
     if (sentMail) {
       console.log('Invitation Email Sent')
+    }
+  } catch (err) {
+    console.log(err)
+  }
+})
+
+eventEmitter.on('saleReportedFaulty', async ({
+  businessname,
+  recipient,
+  creator,
+  saleLink
+}) => {
+  const msg = {
+    to: recipient,
+    from: 'umar@arcodeh.pro',
+    templateId: 'd-45ccda29cd9a4654bae8c5394c1d4c57',
+    dynamicTemplateData: {
+      subject: 'Sale reported as faulty',
+      businessname: businessname,
+      creator: creator,
+      saleLink: saleLink
+    }
+  }
+  try {
+    const sentMail = await sgMail.send(msg)
+    if (sentMail) {
+      console.log('Faulty Sale Report Email Sent')
     }
   } catch (err) {
     console.log(err)

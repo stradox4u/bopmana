@@ -30,11 +30,11 @@ const saleSchema = new Schema({
   faulty: {
     type: Boolean,
     default: false,
-    auditedBy: {
-      userId: Schema.Types.ObjectId,
-      ref: 'User',
-      required: false
-    }
+  },
+  auditedBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: false
   },
   paid: {
     type: String,
