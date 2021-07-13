@@ -6,10 +6,10 @@ const productSchema = new Schema({
     type: String,
     required: true
   },
-  prices: [{
+  prices: {
     unitPrice: Number,
     cartonPrice: Number,
-  }],
+  },
   cartonQuantity: {
     type: Number,
     required: true,
@@ -23,10 +23,10 @@ const productSchema = new Schema({
     type: String,
     required: false
   },
-  stockQuantity: [{
+  stockQuantity: {
     stockUnits: Number,
     stockCartons: Number
-  }],
+  },
 }, { timestamps: true })
 
 module.exports = mongoose.model('Product', productSchema)

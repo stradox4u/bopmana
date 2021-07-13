@@ -1,15 +1,21 @@
 const mongoose = require('mongoose')
+
 const Schema = mongoose.Schema
 
-const saleSchema = new Schema({
+const returnSchema = new Schema({
+  businessId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Business',
+    required: true
+  },
   creator: {
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  businessId: {
+  saleId: {
     type: Schema.Types.ObjectId,
-    ref: 'Business',
+    ref: 'Sale',
     required: true
   },
   products: [{
@@ -20,7 +26,7 @@ const saleSchema = new Schema({
     },
     price: {
       unitPrice: Number,
-      cartonPrice: Number,
+      cartonPrice: Number
     },
     quantity: {
       unitQuantity: Number,
@@ -31,23 +37,19 @@ const saleSchema = new Schema({
       required: true
     }
   }],
-  returns: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Return',
-    required: false
-  }],
-  paid: {
-    type: String,
-    default: 'full'
-  },
-  amountPaid: {
+  totalPrice: {
     type: Number,
     required: true
   },
-  totalPrice: {
-    type: Number,
-    required: true,
+  accepted: {
+    type: Boolean,
+    default: false
+  },
+  acceptedBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: false
   }
-}, { timestamps: true })
+})
 
-module.exports = mongoose.model('Sale', saleSchema)
+module.exports = mongoose.model('Return', returnSchema)

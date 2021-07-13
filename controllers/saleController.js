@@ -2,8 +2,6 @@ const { validationResult } = require('express-validator')
 
 const helpers = require('../helpers/helpers')
 const Sale = require('../models/sale')
-const Business = require('../models/business')
-const eventEmitter = require('../listeners/listeners')
 
 exports.createSale = async (req, res, next) => {
   const errors = validationResult(req)
@@ -97,47 +95,6 @@ exports.getSale = async (req, res, next) => {
     res.status(200).json({
       message: 'Success',
       sale: sale
-    })
-  } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500
-    }
-    next(err)
-  }
-}
-
-exports.patchReportSale = async (req, res, next) => {
-  const saleId = req.params.saleId
-  try {
-    const sale = await Sale.findOne({ _id: saleId, creator: req.userId })
-      .populate('creator', 'name')
-    if (!sale) {
-      const error = new Error('Sale not found')
-      error.statusCode = 404
-      throw error
-    }
-    sale.faulty = true
-    const updatedSale = await sale.save()
-
-    const business = await Business.findById(req.businessId)
-      .populate('administrators', 'email')
-    if (!business) {
-      const error = new Error('Business not found')
-      error.statusCode = 404
-      throw error
-    }
-
-    const baseUrl = process.env.APP_BASE_URL
-    eventEmitter.emit('saleReportedFaulty', {
-      businessname: business.name,
-      recipient: business.administrators[0].email,
-      creator: sale.creator.name,
-      saleLink: `${baseUrl}/sale/${saleId}`
-    })
-
-    res.status(200).json({
-      message: 'Sale marked faulty',
-      sale: updatedSale
     })
   } catch (err) {
     if (!err.statusCode) {

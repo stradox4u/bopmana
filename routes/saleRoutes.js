@@ -15,8 +15,5 @@ router.get('/sales', isAuth, isVerified, saleController.getSalesIndex)
 // Get a specific sale
 router.get('/:saleId', isAuth, isVerified, saleController.getSale)
 
-// Report a problem with a specific sale
-router.patch('/report/:saleId', isAuth, isVerified, saleController.patchReportSale)
-
 
 module.exports = router

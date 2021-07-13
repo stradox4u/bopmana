@@ -9,6 +9,7 @@ const authRoutes = require('./routes/authRoutes')
 const productRoutes = require('./routes/productRoutes')
 const saleRoutes = require('./routes/saleRoutes')
 const businessRoutes = require('./routes/businessRoutes')
+const returnRoutes = require('./routes/returnRoutes')
 
 const app = express()
 
@@ -49,6 +50,7 @@ app.use('/auth', authRoutes)
 app.use('/product', productRoutes)
 app.use('/sale', saleRoutes)
 app.use('/business', businessRoutes)
+app.use('/return', returnRoutes)
 
 app.use((error, req, res, next) => {
   const status = error.statusCode || 500
@@ -62,6 +64,7 @@ const dbUrl = process.env.DATABASE_URL
 mongoose.connect(dbUrl, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  useFindAndModify: false
 })
   .then(result => {
     // console.log(result)

@@ -3,12 +3,18 @@ const sgMail = require('@sendgrid/mail')
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
+const sender = process.env.SENDGRID_SENDER_EMAIL
+
 const eventEmitter = new EventEmitter()
 
-eventEmitter.on('sendVerificationEmail', async ({ username, verifyUrl, recipient }) => {
+eventEmitter.on('sendVerificationEmail', async ({
+  username,
+  verifyUrl,
+  recipient
+}) => {
   const msg = {
     to: recipient,
-    from: 'umar@arcodeh.pro',
+    from: sender,
     templateId: 'd-24ed52aaa6244b5e95c652e110c7da6f',
     dynamicTemplateData: {
       subject: 'Verify your email',
@@ -29,7 +35,7 @@ eventEmitter.on('sendVerificationEmail', async ({ username, verifyUrl, recipient
 eventEmitter.on('resetPassword', async ({ username, resetUrl, recipient }) => {
   const msg = {
     to: recipient,
-    from: 'umar@arcodeh.pro',
+    from: sender,
     templateId: 'd-3276441457e54197a224e31ee2d4539a',
     dynamicTemplateData: {
       subject: 'Password reset instructions',
@@ -50,7 +56,7 @@ eventEmitter.on('resetPassword', async ({ username, resetUrl, recipient }) => {
 eventEmitter.on('passwordUpdated', async ({ username, recipient }) => {
   const msg = {
     to: recipient,
-    from: 'umar@arcodeh.pro',
+    from: sender,
     templateId: 'd-18ab0928c055456a986d6fd65a6ac437',
     dynamicTemplateData: {
       subject: 'Password successfully reset',
@@ -75,7 +81,7 @@ eventEmitter.on('inviteCreated', async ({
 }) => {
   const msg = {
     to: recipient,
-    from: 'umar@arcodeh.pro',
+    from: sender,
     templateId: 'd-8186f30811b4430490021547697802d2',
     dynamicTemplateData: {
       subject: `Invitation from ${businessname}`,
@@ -94,21 +100,21 @@ eventEmitter.on('inviteCreated', async ({
   }
 })
 
-eventEmitter.on('saleReportedFaulty', async ({
+eventEmitter.on('goodsReturned', async ({
   businessname,
   recipient,
   creator,
-  saleLink
+  returnLink
 }) => {
   const msg = {
     to: recipient,
-    from: 'umar@arcodeh.pro',
+    from: sender,
     templateId: 'd-45ccda29cd9a4654bae8c5394c1d4c57',
     dynamicTemplateData: {
       subject: 'Sale reported as faulty',
       businessname: businessname,
       creator: creator,
-      saleLink: saleLink
+      returnLink: returnLink
     }
   }
   try {

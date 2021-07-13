@@ -18,18 +18,18 @@ exports.decreaseStock = (prods) => {
         throw error
       }
 
-      if (product.stockQuantity[0].stockUnits >= prod.quantity[0].unitQuantity) {
-        product.stockQuantity[0].stockUnits -= prod.quantity[0].unitQuantity
+      if (product.stockQuantity.stockUnits >= prod.quantity.unitQuantity) {
+        product.stockQuantity.stockUnits -= prod.quantity.unitQuantity
       } else {
-        const toBreakBox = prod.quantity[0].unitQuantity - product.stockQuantity[0].stockUnits
-        product.stockQuantity[1].stockCartons--
-        product.stockQuantity[0].stockUnits = product.cartonQuantity - toBreakBox
+        const toBreakBox = prod.quantity.unitQuantity - product.stockQuantity.stockUnits
+        product.stockQuantity.stockCartons--
+        product.stockQuantity.stockUnits = product.cartonQuantity - toBreakBox
       }
-      product.stockQuantity[1].stockCartons -= prod.quantity[1].cartonQuantity
+      product.stockQuantity.stockCartons -= prod.quantity.cartonQuantity
 
       await product.save()
     } catch (err) {
-      console.err(err)
+      console.log(err)
     }
   })
 }
