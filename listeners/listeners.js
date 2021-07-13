@@ -111,7 +111,7 @@ eventEmitter.on('goodsReturned', async ({
     from: sender,
     templateId: 'd-45ccda29cd9a4654bae8c5394c1d4c57',
     dynamicTemplateData: {
-      subject: 'Sale reported as faulty',
+      subject: 'Goods returned',
       businessname: businessname,
       creator: creator,
       returnLink: returnLink

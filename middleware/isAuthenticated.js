@@ -6,7 +6,7 @@ module.exports = (req, res, next) => {
   const authHeader = req.get('Authorization')
   if (!authHeader) {
     const error = new Error('No authorization header found')
-    error.statusCode = 403
+    error.statusCode = 401
     throw error
   }
   const token = authHeader.split(' ')[1]
@@ -14,7 +14,7 @@ module.exports = (req, res, next) => {
   try {
     decodedToken = jwt.verify(token, jwtSecret)
   } catch (err) {
-    err.statusCode = 500
+    err.statusCode = 401
     throw err
   }
   if (!decodedToken) {
