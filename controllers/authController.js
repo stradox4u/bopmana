@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/user')
 const helpers = require('../helpers/helpers')
 const eventEmitter = require('../listeners/listeners')
+const jwtHelpers = require('../helpers/jwtHelpers')
+const cookieHelpers = require('../helpers/refreshCookieHelpers')
 
 const defaultImage = 'public/default_user.png'
 const baseUrl = process.env.APP_BASE_URL
@@ -100,26 +102,29 @@ exports.login = async (req, res, next) => {
       throw error
     }
 
-    const token = jwt.sign({
-      email: user.email,
-      userId: user._id.toString(),
-      userRole: user.role,
-      businessId: user.businessId.toString()
-    }, jwtSecret, { expiresIn: '1h' })
+    const token = jwtHelpers.createAccessToken(
+      user.email,
+      user._id.toString(),
+      user.role,
+      user.businessId.toString()
+    )
 
-    const refreshToken = jwt.sign({
-      id: user._id.toString()
-    }, refreshSecret, {
-      expiresIn: '7d'
-    })
+    const refreshToken = jwtHelpers.createRefreshToken(user._id.toString())
     user.refreshToken = refreshToken
     await user.save()
-    res.status(200).json({
-      token: token,
-      refreshToken: refreshToken,
-      username: user.name,
-      userId: user._id.toString(),
+
+    const expiration = cookieHelpers.getExpiry()
+
+    res.cookie('refresh_cookie', refreshToken, {
+      expires: expiration,
+      httpOnly: true
     })
+      .status(200).json({
+        token: token,
+        expires_in: 600_000,
+        username: user.name,
+        userId: user._id.toString(),
+      })
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500
@@ -278,7 +283,7 @@ exports.patchUpdatePassword = async (req, res, next) => {
 }
 
 exports.postRefreshTokens = async (req, res, next) => {
-  const refToken = req.body.refToken
+  const refToken = req.cookies.refresh_cookie
 
   let decodedToken
   try {
@@ -306,25 +311,26 @@ exports.postRefreshTokens = async (req, res, next) => {
       error.statusCode = 404
       throw error
     }
-    const token = jwt.sign({
-      email: user.email,
-      userId: user._id.toString(),
-      userRole: user.role,
-      businessId: user.businessId.toString()
-    }, jwtSecret, { expiresIn: '1h' })
+    const token = jwtHelpers.createAccessToken(
+      user.email,
+      user._id.toString(),
+      user.role,
+      user.businessId.toString()
+    )
 
-    const refreshToken = jwt.sign({
-      id: user._id.toString()
-    }, refreshSecret, {
-      expiresIn: '7d'
-    })
+    const refreshToken = jwtHelpers.createRefreshToken(user._id.toString())
 
     user.refreshToken = refreshToken
     await user.save()
-    res.status(200).json({
-      token: token,
-      refreshToken: refreshToken,
+
+    res.cookie('refresh_cookie', refreshToken, {
+      expires: cookieHelpers.getExpiry(),
+      httpOnly: true
     })
+      .status(200).json({
+        token,
+        expires_in: 600_000
+      })
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500

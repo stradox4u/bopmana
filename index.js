@@ -4,6 +4,7 @@ require('dotenv').config()
 const express = require('express')
 const mongoose = require('mongoose')
 const multer = require('multer')
+const cookieParser = require('cookie-parser')
 
 const authRoutes = require('./routes/authRoutes')
 const productRoutes = require('./routes/productRoutes')
@@ -36,6 +37,7 @@ app.use(multer({
   storage: fileStorage,
   fileFilter: fileFilter
 }).single('image'))
+app.use(cookieParser())
 app.use('/public', express.static(path.join(__dirname, 'public')))
 
 const corsAllow = process.env.CORS_ALLOW
@@ -43,6 +45,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', `${corsAllow}`)
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
   next()
 })
 
