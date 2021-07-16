@@ -62,7 +62,7 @@ exports.postCreateBusiness = async (req, res, next) => {
 
     // Create URL to verify email
     const baseUrl = process.env.APP_BASE_URL
-    const token = jwtHelpers.createAdminVerifyToken(
+    const token = jwtHelpers.createVerifyToken(
       savedAdmin._id.toString(),
       savedBusiness._id.toString()
     )

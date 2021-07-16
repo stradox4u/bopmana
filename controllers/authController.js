@@ -159,7 +159,10 @@ exports.resendVerificationMail = async (req, res, next) => {
       throw error
     }
 
-    const token = jwtHelpers.createVerifyToken(user._id.toString())
+    const token = jwtHelpers.createVerifyToken(
+      user._id.toString(),
+      user.businessId.toString()
+    )
     const verifyUrl = `${baseUrl}/auth/verify/email/${token}`
 
     eventEmitter.emit('sendVerificationEmail', {
@@ -189,7 +192,10 @@ exports.postPasswordReset = async (req, res, next) => {
       error.statusCode = 404
       throw error
     }
-    const token = jwtHelpers.createVerifyToken(user._id.toString())
+    const token = jwtHelpers.createVerifyToken(
+      user._id.toString(),
+      user.businessId.toString()
+    )
 
     // Save the token to the user
     user.passwordResetToken = token

@@ -16,17 +16,11 @@ exports.createRefreshToken = (id) => {
   return jwt.sign({ id }, refreshSecret, { expiresIn: '7d' })
 }
 
-exports.createVerifyToken = (id) => {
+exports.createVerifyToken = (id, busId) => {
   return jwt.sign({
-    userId: id
-  }, jwtSecret, { expiresIn: '10m' })
-}
-
-exports.createAdminVerifyToken = (userId, busId) => {
-  return jwt.sign({
-    userId: userId,
+    userId: id,
     businessId: busId
-  }, jwtSecret, { expires: '10m' })
+  }, jwtSecret, { expiresIn: '10m' })
 }
 
 exports.createInviteToken = (email, id) => {
