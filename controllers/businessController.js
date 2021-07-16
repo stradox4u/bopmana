@@ -3,10 +3,10 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
 const eventEmitter = require('../listeners/listeners')
+const jwtHelpers = require('../helpers/jwtHelpers')
 
 const Business = require('../models/business')
 const User = require('../models/user')
-const business = require('../models/business')
 
 const defaultBusinessLogo = 'public/default_business.png'
 const defaultUserImage = 'public/default_user.png'
@@ -62,10 +62,11 @@ exports.postCreateBusiness = async (req, res, next) => {
 
     // Create URL to verify email
     const baseUrl = process.env.APP_BASE_URL
-    const token = jwt.sign({
-      userId: savedAdmin._id.toString(),
-      businessId: savedBusiness._id.toString(),
-    }, process.env.JWT_SECRET, { expiresIn: '10m' })
+    const token = jwtHelpers.createAdminVerifyToken(
+      savedAdmin._id.toString(),
+      savedBusiness._id.toString()
+    )
+
     const verifyUrl = `${baseUrl}/auth/verify/email/${token}`
 
     // Fire event to send verification email
@@ -98,29 +99,23 @@ exports.postCreateInvite = async (req, res, next) => {
     throw error
   }
   try {
-    const user = await User.findById(req.userId)
+    const user = await User.findById(req.userId).populate('businessId', 'name')
     if (!user) {
       const error = new Error('User not found')
       error.statusCode = 404
       throw error
     }
 
-    const business = await Business.findById(req.businessId)
-    if (!business) {
-      const error = new Error('Business not found')
-      error.statusCode = 404
-      throw error
-    }
     const baseUrl = process.env.APP_BASE_URL
-    const token = jwt.sign({
-      invitee: req.body.email,
-      businessId: business._id.toString()
-    }, process.env.JWT_SECRET, { expiresIn: '1h' })
+    const token = jwtHelpers.createInviteToken(
+      req.body.email,
+      user.businessId._id.toString()
+    )
     const inviteUrl = `${baseUrl}/auth/signup/${token}`
 
     eventEmitter.emit('inviteCreated', {
       username: user.name,
-      businessname: business.name,
+      businessname: user.businessId.name,
       recipient: req.body.email,
       inviteUrl: inviteUrl
     })

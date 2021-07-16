@@ -1,6 +1,5 @@
 const { validationResult } = require("express-validator")
 const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
 
 const User = require('../models/user')
 const helpers = require('../helpers/helpers')
@@ -29,13 +28,8 @@ exports.signup = async (req, res, next) => {
     throw error
   }
   const token = req.body.token
-  let decodedToken
-  try {
-    decodedToken = jwt.verify(token, process.env.JWT_SECRET)
-  } catch (err) {
-    err.statusCode = 500
-    throw err
-  }
+  const decodedToken = jwtHelpers.decodeToken(token, jwtSecret)
+
   // Check if the entered email is the same as in the token
   if (decodedToken.invitee !== req.body.email) {
     const error = new Error('Wrong email supplied')
@@ -136,13 +130,8 @@ exports.login = async (req, res, next) => {
 exports.putVerifyEmail = async (req, res, next) => {
   const token = req.body.token
 
-  const decodedToken = jwt.verify(token, process.env.JWT_SECRET)
+  const decodedToken = jwtHelpers.decodeToken(token, jwtSecret)
 
-  if (!decodedToken) {
-    const error = new Error('Token verification failed')
-    error.statusCode = 401
-    throw error
-  }
   const userId = decodedToken.userId
 
   try {
@@ -170,9 +159,7 @@ exports.resendVerificationMail = async (req, res, next) => {
       throw error
     }
 
-    const token = jwt.sign({
-      userId: user._id.toString(),
-    }, process.env.JWT_SECRET, { expiresIn: '10m' })
+    const token = jwtHelpers.createVerifyToken(user._id.toString())
     const verifyUrl = `${baseUrl}/auth/verify/email/${token}`
 
     eventEmitter.emit('sendVerificationEmail', {
@@ -202,9 +189,8 @@ exports.postPasswordReset = async (req, res, next) => {
       error.statusCode = 404
       throw error
     }
-    const token = jwt.sign({
-      userId: user._id.toString(),
-    }, process.env.JWT_SECRET, { expiresIn: '1h' })
+    const token = jwtHelpers.createVerifyToken(user._id.toString())
+
     // Save the token to the user
     user.passwordResetToken = token
     await user.save()
@@ -237,25 +223,16 @@ exports.patchUpdatePassword = async (req, res, next) => {
     throw error
   }
   const token = req.body.token
-  const decodedToken = jwt.verify(token, process.env.JWT_SECRET)
-  if (!decodedToken) {
-    const error = new Error('Token verification failed')
-    error.statusCode = 401
-    throw error
-  }
+  const decodedToken = jwtHelpers.decodeToken(token, jwtSecret)
+
   const userId = decodedToken.userId
   const password = req.body.password
 
   try {
-    const resetUser = await User.findOne({ passwordResetToken: token })
+    const resetUser = await User.findOne({ _id: userId, passwordResetToken: token })
     if (!resetUser) {
       return res.status(404).json({
         message: 'User not found'
-      })
-    }
-    if (resetUser._id.toString() !== userId.toString()) {
-      return res.status(401).json({
-        message: 'Unauthorized reset request'
       })
     }
 
@@ -264,7 +241,9 @@ exports.patchUpdatePassword = async (req, res, next) => {
       const error = new Error('Password hashing failed')
       throw error
     }
-    const user = await User.findByIdAndUpdate(userId, { password: hashedPw, passwordResetToken: null })
+    resetUser.password = hashedPw
+    resetUser.passwordResetToken = null
+    const user = await resetUser.save()
 
     eventEmitter.emit('passwordUpdated', {
       username: user.name,
@@ -285,21 +264,7 @@ exports.patchUpdatePassword = async (req, res, next) => {
 exports.postRefreshTokens = async (req, res, next) => {
   const refToken = req.cookies.refresh_cookie
 
-  let decodedToken
-  try {
-    decodedToken = jwt.verify(
-      refToken,
-      refreshSecret
-    )
-  } catch (error) {
-    error.statusCode = 500
-    throw error
-  }
-  if (!decodedToken) {
-    const error = new Error('Not authenticated')
-    error.statusCode = 401
-    throw error
-  }
+  const decodedToken = jwtHelpers.decodeToken(refToken, refreshSecret)
   const userId = decodedToken.id
   try {
     const user = await User.findOne({
