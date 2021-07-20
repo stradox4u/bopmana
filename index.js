@@ -11,6 +11,7 @@ const productRoutes = require('./routes/productRoutes')
 const saleRoutes = require('./routes/saleRoutes')
 const businessRoutes = require('./routes/businessRoutes')
 const returnRoutes = require('./routes/returnRoutes')
+const receiptRoutes = require('./routes/receiptRoutes')
 
 const app = express()
 
@@ -54,6 +55,7 @@ app.use('/product', productRoutes)
 app.use('/sale', saleRoutes)
 app.use('/business', businessRoutes)
 app.use('/return', returnRoutes)
+app.use('/receipt', receiptRoutes)
 
 app.use((error, req, res, next) => {
   const status = error.statusCode || 500

@@ -11,6 +11,12 @@ const businessSchema = new Schema({
     type: String,
     required: false
   },
+  address: {
+    street1: String,
+    street2: String,
+    city: String,
+    state: String
+  },
   staff: [{
     type: Schema.Types.ObjectId,
     ref: 'User',

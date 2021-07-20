@@ -23,6 +23,12 @@ exports.postCreateBusiness = async (req, res, next) => {
   }
   const businessName = req.body.businessName
   const businessLogoUrl = defaultBusinessLogo
+  const businessAddress = {
+    street1: req.body.streetAddress1,
+    street2: req.body.streetAddress2,
+    city: req.body.city,
+    state: req.body.state
+  }
 
   const userName = req.body.userName
   const email = req.body.userEmail
@@ -42,6 +48,7 @@ exports.postCreateBusiness = async (req, res, next) => {
     const business = new Business({
       name: businessName,
       businessLogoUrl: businessLogoUrl,
+      address: businessAddress
     })
 
     const savedBusiness = await business.save()

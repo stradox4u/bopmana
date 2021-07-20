@@ -41,7 +41,10 @@ router.post('/create', [
           }
         })
     }),
-  body('userAlias').trim().isString().isLength({ min: 3 }).withMessage('Your username must be min. 3 characters'),
+  body('streetAddress1').trim().not().isEmpty().withMessage('This field cannot be empty'),
+  body('streetAddress2').trim().not().isEmpty().withMessage('This field cannot be empty'),
+  body('city').trim().not().isEmpty().withMessage('This field cannot be empty'),
+  body('state').trim().not().isEmpty().withMessage('This field cannot be empty'),
   body('password').trim().isString().isLength({ min: 6 }).withMessage('Password must be min. 6 characters'),
   body('confirmPassword').custom((val, { req }) => {
     if (val !== req.body.password) {
