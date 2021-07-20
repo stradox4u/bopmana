@@ -3,7 +3,7 @@ const Sale = require('../models/sale')
 exports.getReceipt = async (req, res, next) => {
   const saleId = req.params.saleId
   const sale = await Sale.findById(saleId)
-    .populate('businessId', ['name', 'address'])
+    .populate('businessId', ['name', 'address', 'businessLogoUrl'])
     .populate('creator', 'name')
     .populate('products.productId', 'title')
   if (!sale) {
